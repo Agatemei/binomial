@@ -1,0 +1,34 @@
+# calculates the mean of binomial random variable
+bin_mean <- function(trials, prob) {
+  check_trials(trials)
+  check_prob(prob)
+  return(aux_mean(trials, prob))
+}
+
+# calculates the variance of binomial random variable
+bin_variance <- function(trials, prob) {
+  check_trials(trials)
+  check_prob(prob)
+  return(aux_variance(trials, prob))
+}
+
+# calculates the mode of binomial random variable
+bin_mode <- function(trials, prob) {
+  check_trials(trials)
+  check_prob(prob)
+  return(aux_mode(trials, prob))
+}
+
+# calculates the skewness of binomial random variable
+bin_skewness <- function(trials, prob) {
+  check_trials(trials)
+  check_prob(prob)
+  return(aux_skewness(trials, prob))
+}
+
+# calculates the kurtosis of binomial random variable
+bin_kurtosis <- function(trials, prob) {
+  check_trials(trials)
+  check_prob(prob)
+  return(aux_kurtosis(trials, prob))
+}
