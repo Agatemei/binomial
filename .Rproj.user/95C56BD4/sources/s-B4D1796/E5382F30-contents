@@ -1,0 +1,193 @@
+---
+title: "Warmup04"
+author: "Yuxin Mei"
+date: "2/21/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(readr)
+```
+
+
+## 1) Importing Data
+
+```{r}
+github <- "https://raw.githubusercontent.com/ucb-stat133/stat133-hws/"
+repo <- "master/data/nba2018-players.csv"
+datafile <- paste0(github, repo)
+```
+
+a) Specify data types:
+
+```{r}
+data_types <- cols(col_character(), col_character(), col_factor(), col_integer(), col_integer(), col_integer(), col_integer(), col_character(), col_double(), col_integer(), col_integer(), col_integer(), col_integer(),  col_integer(), col_integer())
+```
+
+b) Import the data with __read_csv()__ and assign it to an object named __dat__. And then display a __summary()__ of __dat__.
+
+```{r}
+dat <- read_csv(datafile, col_types = data_types)
+
+summary(dat)
+```
+
+c) What class of object is __dat__? 
+
+```{r}
+class(dat)
+typeof(dat)
+```
+
+
+-----
+
+
+## Technical Questions about "readr"
+
+
+a) When you print __dat__ --- typing the name of the object to see how it gets displayed --- R tells you that it is a __tibble__. Do some research (e.g. google it) to explain what are the similarities and differences between a __data.frame__ and a __tibble__.  
+
+    Tibbles are a modern reimagining of the data.frame, keeping what time has proven to be effective, and throwing out what is not.   
+    
+    There are two main differences in the usage of a data frame vs a tibble: printing, and subsetting.
+    
+    Tibbles have a refined print method that shows only the first 10 rows, and all the columns that fit on screen. In addition to its name, each column reports its type, a nice feature borrowed from str().
+    
+    Tibbles are strict about subsetting. Compared to a data.frame, tibbles are more strict: they never do partial matching, and they will generate a warning if the column you are trying to access does not exist.
+
+b) Say you want to import just a couple of columns from __nba2018-players.csv__. For instance, suppose you want to import columns __player__, __team__, __salary__, and __points__, with data types \"__character__\", \"__character__\", \"__double__\", and \"__double__\", respectively. Is it possible to use __read_csv()__ to import only these columns, with the specified data types? Yes or No, and explain.
+
+    Yes. We can use `read_csv(datafile, col_types = cols_only(player = col_character(), team = col_character(), salary = col_double(), points = col_double()))` to achieve this.
+
+
+c) The base R function __read.csv()__ uses arguments like __header__, __col.names__, __na.strings__, and __colClasses__. What are the equivalent (or similar) arguments in __read_csv()__?
+
+    By `?read.csv` and `?read_csv` we can easily find out the corresponding arguments in __read_csv__ are:  __col_names__ (TRUE: the first row is the column names. FALSE: it's not.), __na__ and __col_types__.
+
+
+-----
+
+
+## 3) Salaries by Team
+
+
+a) Use "dplyr" functions to create a data __tibble__ named __team_salaries__ containing columns for __team__, __total_salary__, __mean_salary__, and __median_salary__. All three types of salary variables must be in millions of dollars (NOT in dollars). Arrange this table by total_salary in __descending__ order.
+
+```{r}
+team_salaries <- arrange(
+  summarise(
+    group_by(dat, team),
+    total_salary = sum(salary) / 1000000,
+    mean_salary = mean(salary) / 1000000,
+    median_salary = median(salary) / 1000000),
+  desc(total_salary)
+)
+```
+
+b) Because __team_salaries__ is a __tibble__ object, when you try to print it, only the first 10 rows are displayed. In order to display the entire table, run the following command:
+
+```{r}
+as.data.frame(team_salaries)
+```
+
+c) Use __"ggplot2"__ functions to create a horizontal barchart of the total salary by team, in decreasing order (see conceptual sketch below). Include axis labels, and a title. Also, noctice the vertical line indicating the average salary of NBA teams.
+
+```{r}
+ggplot(team_salaries, aes(x = reorder(team, total_salary), y = total_salary)) +
+  geom_bar(stat = "identity", fill = "light green") + 
+  geom_hline(yintercept = mean(team_salaries$total_salary), color = "dark green", size = 1) +
+  labs(title = "NBA Teams Ranked by Total Salary", x = "Team", y = "Total Salary (in millions)") + 
+  coord_flip() +
+  theme_classic()
+```
+
+
+-----
+
+
+## Points by Team
+
+
+a) Use "dplyr" functions ro create a data __tibble__ named __team_points__ containing columns for __team__, __tatal_points__, __mean_points__, and __median_points__. Arrange this table by __total_points__ in descending order.
+
+```{r}
+team_points <- arrange(
+  summarise(
+    group_by(dat, team),
+    total_points = sum(points),
+    mean_points = mean(points),
+    median_points = median(points)),
+  desc(total_points)
+)
+```
+
+b) Invoke __as.data.frame (team_points)__ to display the entire table.
+
+```{r}
+as.data.frame(team_points)
+```
+
+c) Use "ggplot2" functions to create a barchart of the total points by team, similar to one about salaries in the previous section.
+
+```{r}
+ggplot(team_points, aes(x = reorder(team, total_points), y = total_points)) +
+  geom_bar(stat = "identity", fill = "light blue") +
+  geom_hline(yintercept = mean(team_points$total_points), color = "dark blue", size = 1) +
+  labs(title = "NBA Teams Ranked by Total Scored Points", x = "Team", y = "Total Scored Points") + 
+  coord_flip() +
+  theme_classic()
+```
+
+
+## Cost of Scored Points
+
+
+a) Join (i.e. merge) your tables __team_salaries__ and __team_points__ into a single table named __points_salary__. There are several functions in "dplyr" that allow you to _join_ two tables: e.g. inner_join(), full_join(), etc. 
+
+```{r}
+points_salary <- full_join(team_salaries, team_points)
+```
+
+b) Display a __summary()__ of __points_salary__
+
+```{r}
+summary(points_salary)
+```
+
+c) Mutate __points_salary__ by adding a column __cost_point__; this new variable should be obtained as the ratio of Total-Salary (in dollars) divided by Total-Points.
+
+```{r}
+points_salary <- mutate(points_salary, cost_point = total_salary * 1000000 / total_points)
+```
+
+d) Display a __summary()__ of __cost_point__
+
+```{r}
+summary(points_salary$cost_point)
+```
+
+e) Use "ggplot2" functions to create a visual display of __cost_point__ values. Use a graphic that allows any reader to easily see: differences between the costs, which team has the highest cost, which team has the lowest cost, and which team(s) has the "typical" cost of points. Keep in mind supporting graphical elements such as axis labels, title, colors, background, maybe a legend, etc.
+
+```{r}
+ggplot(points_salary, aes(x = reorder(team, cost_point), y = cost_point)) +
+  geom_bar(stat = "identity", fill = "pink") +
+  geom_hline(yintercept = mean(points_salary$cost_point), color = "red", size = 1) +
+  labs(title = "NBA Teams Ranked by Cost-Point", x = "Team", y = "Cost-Point") + 
+  coord_flip() +
+  theme_classic()
+```
+
+f) Use "ggplot2" functions to create a visual display of salary-values and point-values, taking into account __cost_point__. In other words, choose one salary variable (e.g. __median_salary__), and choose one of the points variable (e.g. __median_points__), to create a visual display that also takes into account __cost_point__ as a visual attribute.
+
+```{r}
+ggplot(points_salary, aes(x = median_salary, y = median_points, color = cost_point)) +
+  geom_point() +
+  labs(title = "Median Salary and Median Points with Cost-Point")
+```
+

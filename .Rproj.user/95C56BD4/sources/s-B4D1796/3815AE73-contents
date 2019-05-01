@@ -1,0 +1,259 @@
+---
+title: 'Warmup 05: Functions'
+author: "Yuxin Mei"
+date: "3/15/2019"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error =  TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(ggplot2)
+```
+
+
+## 1) Function
+
+The Gaussian (Normal) function:
+
+$$ g(x) = \frac{1} {\sigma \sqrt{2\pi} } e^{-\frac{1}{2} (\frac{x - \mu}{\sigma})^{2}} $$
+
+The parameters $\sigma$ and $\mu$ are real numbers, where $\sigma$ must be greater than zero.
+
+### Function gaussian()
+
+Write a function gaussian()—including roxygen comments—to compute the probability density based on the formula above.
+
+- The function should take three arguments:  
+
+    --- x = numeric vector for $x$ (default 0)
+    --- m = numeric vector for $mu$ (default 0)
+    --- s = numeric vector for $sigma$ (default 1)
+    
+- It should return the computed probability density. Do NOT use print() for the returned output. Use return() instead.
+
+- If s is less than or equal to zero, raise an error: __"s must be greater than zero"__
+
+```{r}
+#' @title gaussian
+#' @description calculates the probability density based on the Gaussian (Normal) function
+#' @param x numeric vector for x, variable
+#' @param m numeric vector for mu, the expectation
+#' @param s numeric vector for sigma, the standard variation 
+#' @return computed probability density
+
+gaussian <- function(x = 0, m = 0, s = 1) {
+  if (s <= 0) {
+    stop("s must be greater than zero")
+  } else {
+    return(1/(s * sqrt(2 * pi)) * exp(1)^(-0.5 * ((x - m) / s)^2)) 
+  }
+}
+```
+
+- Test:
+
+```{r}
+# test set 1
+gaussian(x = 0, m = 0, s = 1) 
+gaussian(x = 1, m = 0, s = 2)
+
+# test set 2
+gaussian(x = 1, m = 0, s = 0) 
+gaussian(x = 1, m = 0, s = -1)
+```
+
+- Use gaussian() function with a vector seq(-4.5, 4.5, by = 0.1), and pass the values to plot() to get a normal curve:
+
+```{r}
+# gaussian curve
+x_values <- seq(from = -4.5, to = 4.5, by = 0.1) 
+y_values <- gaussian(x_values, m = 0, s = 2)
+plot(x_values, y_values, las = 1, type = "l", lwd = 2)
+```
+
+- In addition to the above plot, you should also try to replicate-—as much as possible—- the following graph (original version displayed in the wikipedia entry of the normal distribution). You can use any plotting approach, but you must specify colors in hexadecimal notation.
+
+```{r}
+x_values <- seq(from = -5, to = 5, by = 0.05) 
+y1 <- gaussian(x_values, m = 0, s = sqrt(0.2))
+y2 <- gaussian(x_values, m = 0, s = 1)
+y3 <- gaussian(x_values, m = 0, s = sqrt(5))
+y4 <- gaussian(x_values, m = -2, s = sqrt(0.5))
+
+labs <- c(expression(paste(mu,"=",0,", ",sigma^2,"=",0.2)), expression(paste(mu,"=",0,", ",sigma^2,"=",1.0)), expression(paste(mu,"=",0,", ",sigma^2,"=",5.0)), expression(paste(mu,"=",-2,", ",sigma^2,"=",0.5)))
+
+plot(x_values, y1, type = "l", col = "#0c45a0", lwd = 2.5,  ylim = c(0.0, 1.0), ann = F, xaxt = "n", yaxt = "n")
+axis(1, at = seq(-5, 5, 0.25), labels = F, tcl = 0.1)
+axis(1, -5:5, -5:5, las = 1, tcl = 0.2, font.axis = 1)
+axis(2, at = seq(0, 1, 0.05), labels = F, tcl = 0.1)
+axis(2,seq(0, 1.2, 0.2), seq(0, 1.2, 0.2), tcl = 0.2, las = 1, font.axis = 1)
+axis(3, at = seq(-5, 5, 0.25), labels = F, tcl = 0.1)
+axis(3, -5:5, -5:5, las = 1, tcl = 0.2, labels = F)
+axis(4, at = seq(0, 1, 0.05), labels = F, tcl = 0.1)
+axis(4,seq(0, 1.2, 0.2), seq(0, 1.2, 0.2), tcl = 0.2, las = 1, labels = F)
+lines(x_values, y2, type = "l", col = "#d60606", lwd = 2.5, xlab = expression(x), ylab = expression(psi[paste(mu, ",", sigma^2)](x)))
+lines(x_values, y3, type = "l", col = "#e89645", lwd = 2.5,xlab = expression(x), ylab = expression(psi[paste(mu, ",", sigma^2)](x)))
+lines(x_values, y4, type = "l", col = "#168e33", lwd = 2.5,xlab = expression(x), ylab = expression(psi[paste(mu, ",", sigma^2)](x)))
+legend("topright", legend = labs, lty = 1, bty = "n", col = c("#0c45a0", "#d60606", "#e89645", "#168e33"))
+title(main = "Normal probability density functions",xlab = expression(x), ylab = expression(psi[paste(mu, ",", sigma^2)](x)))
+```
+
+
+-----
+
+
+## 2) Descriptive Statistics
+
+Write a function descriptive()—including roxygen comments—that takes a numeric vector as input, and returns a named vector with the following descriptive statistics:
+    
+    1) min: minimum
+    2) q1: first quartile (Q2)
+    3) median: median
+    4) mean: mean
+    5) q3: third quartile (Q3)
+    6) max: maximum
+    7) range: range or span (max - min)
+    8) iqr: interquartile range (IQR)
+    9) sd: standard deviation
+    
+- The function should take two arguments:
+    
+    --– x = numeric vector for x (default 0)
+    --– na.rm = whether to remove missing values before computations (default FALSE)
+
+- It should return a named vector with the computed summary statistics.
+    
+- The function should stop()—with a descriptive error message—when the input vector is not numeric.
+    
+```{r}
+#' @title descriptive
+#' @description takes a numeric vector as input, and returns a named vector with some descriptive statistics
+#' @param x numeric vector for x (default 0)
+#' @param na.rm whether to remove missing values before computations (default FALSE)
+
+descriptive <- function(x = 0, na.rm = FALSE) {
+  if (!is.numeric(x)) {
+    stop("the input vector must be numeric")
+  } else {
+  min <- min(x, na.rm = na.rm)
+  q1 <- quantile(x, probs = 0.25, na.rm = na.rm)
+  median <- median(x, na.rm = na.rm)
+  mean <- mean(x, na.rm = na.rm)
+  q3 <- quantile(x, probs = 0.75, na.rm = na.rm)
+  max <- max(x, na.rm = na.rm)
+  range <- max - min
+  iqr <- IQR(x, na.rm = na.rm)
+  sd <- sd(x, na.rm = na.rm)
+  desc_stat <- c(min, q1, median, mean, q3, max, range, iqr, sd)
+  names(desc_stat) <- c("min", "q1", "median", "mean", "q3", "max", "range", "iqr", "sd")
+  return(desc_stat)
+  }
+}
+```
+    
+- Test the function:
+
+```{r}
+# input vectors
+set.seed(100)
+x <- rnorm(100)
+y <- x
+y[sample(1:100, size = 10)] <- NA
+
+# test set 1
+descriptive(x) 
+descriptive(y) 
+descriptive(y, na.rm = TRUE) 
+descriptive(letters)
+
+# test set 2
+a <- descriptive(x) 
+class(a)
+length(a)
+names(a)
+```
+
+
+-----
+
+
+## 3) Minkowski Distance
+
+For a point $x = (x_1,x_2,\dots,x_n)$ and a point $y = (y_1,y_2,\dots,y_n)$, the Minkowski distance of order $p$ (p-norm distance) is defined as:
+
+$$ 1-norm\ distance = \sum_{i=1}^{n} |x_i-y_i|$$
+$$ 2-norm\ distance = ( \sum_{i=1}^{n}|x_i-y_i|^2)^{1/2}$$
+$$ p-norm\ distance = ( \sum_{i=1}^{n}|x_i-y_i|^p)^{1/2}$$
+$$ infinite\ norm\ distance = max(|x_1-y_1|,|x_2-y_2|, dots, |x_n-y_n|)$$
+
+where $p$ need not be an integer, but it cannot be less than 1, because otherwise the triangle inequality does not hold.
+
+### Function minkowski()
+
+Write a function __minkowski()__—including roxygen comments—for the Minkowski distances.
+
+- The function should take three arguments:
+
+    --- $x$ = numeric vector for one point
+    --- $y$ = numeric vector for the other point
+    --- $p$ = either a numeric value greater than 1, or a character string "max" (default 1)
+    
+- It should return the computed distance. Do NOT use print() for the returned output. Use return() instead.
+
+- Check that x and y have the same length, otherwise raise an error: "x and y have different lengths".
+
+- Give $p$ a default value of 1.
+
+- If $p$ is numeric, check that $p$ is greater than 1, otherwise raise an error: "p cannot be
+less than 1"
+
+- If $p$ is character, check that $p$ equals "max", otherwise raise an error: "invalid character value for p"
+
+```{r}
+#' @title minkowski
+#' @description take three arguments and return the computed distance
+#' @param x numeric vector for one point
+#' @param y numeric vector for the other point
+#' @param p either a numeric value greater than 1, or a character string "max" (default 1)
+
+minkowski <- function(x, y, p = 1) {
+  if (!length(x) == length(y)) {
+    stop("x and y have different lengths")
+  } 
+  if (is.numeric(p) & p < 1) {
+    stop("p cannot be less than 1") 
+  } 
+  if(is.numeric(p) & p >= 1){
+    return(sum(abs((x-y)^p))^(1/p))
+  }
+  else {
+    if (!p == "max") {stop("invalid character value for p")} 
+    else {return(max(abs(x - y)))}
+  }
+}
+```
+
+- Informal Tests for minkowski()
+
+```{r}
+# some points
+point1 <- c(0, 0) 
+point2 <- c(1, 1) 
+point3 <- sqrt(c(2, 2)) 
+point4 <- c(0, 1) 
+point5 <- c(1, 1, 1)
+# test set 1
+minkowski(point1, point2, p = 1)
+minkowski(point1, point3, p = 2)
+minkowski(point1, point2, p = 'max')
+# test set 2
+minkowski(point4, point5, p = 1)
+minkowski(point1, point2, p = 0.5)
+minkowski(point1, point2, p = 'min')
+```
+
+

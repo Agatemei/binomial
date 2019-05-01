@@ -1,0 +1,376 @@
+---
+title: "Lab03"
+author: "Yuxin Mei"
+date: "February 15th, 2019"
+output: html_document
+---
+
+## Abalone Data Set
+
+## Practice
+
+Look at both the dataset file, and the file with its description, and answer 
+the following questions:
+
+
+- What's the character delimiter?  
+    :, (space) can be the character delimiter.
+
+
+- Is there a row for column names?  
+    There's no such column names in dataset file but the column names are explained in the file with its description.
+
+    
+- Are there any missing values? If so, how are they codified?  
+    It's described in the description file that there's no missing values. (Also can be deduced by the data itself.) If there were some missing values, they could be removed or set as some numbers, such as mean of the same kind, according to the need.
+
+
+- What is the data type of each column?  
+    It can be found in the file with description. __Sex__	is nominal (factor), __Length__, __Diameter__, __Height__, __Whole weight__, __Shucked weight__, __Viscera weight__, __Shell weight__ are continuous (double or real)	 __Rings__ is integer.
+
+### Getting a Local Copy of the Data
+
+```{r}
+url <- "http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data"
+abalone <- read.table(url, sep = ",")
+```
+
+```{r}
+# Or download the file
+origin <- 'http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
+destination <- 'abalone.data'
+download.file(origin, destination)
+```
+
+```{r}
+abalone <- read.table("abalone.data", sep = ",")
+```
+
+Take a peek of first rows and last rows:
+```{r}
+head(abalone)
+tail(abalone)
+```
+
+Check data frame's structure:
+```{r}
+str(abalone)
+```
+
+-----
+
+### Detailed information about the columns 
+
+### Practice
+- Create a vector `column_names` for the name of each column. Use the variable names displayed in the section "7. Attributes Information":
+
+    + `Sex`
+    + `Length`
+    + `Diameter`
+    + `Height`
+    + `Whole`
+    + `Shucked`
+    + `Viscera`
+    + `Shell`
+    + `Rings`
+
+```{r}
+column_names <- c("Sex", "Length", "Diameter", "Height", "Whole", "Shucked", "Viscera", "Shell", "Rings")
+```
+
+- Create another vector `column_types` with R data types (e.g. `character`, `real`, `integer`). Match the R data types with the suggested type in "7. Attributes Information"  (nominal = `character`, continuous = `real`, integer = `integer`).
+
+```{r}
+column_types <- c("character", "real", "real", "real", "real", "real", "real", "real", "integer")
+```
+
+- Optionally, you could also specify a type `"factor"` for the variable `sex` since
+this is supposed to be in nominal scale (i.e. it is a categorical variable). 
+Also note that the variable `rings` is supposed to be integers, therefore we 
+can choose an `integer` vector for this column.
+
+```{r}
+column_types <- c("factor", "real", "real", "real", "real", "real", "real", "real", "integer")
+```
+
+- Look at the documentation of the function `read.table()` and try to read the `abalone.data` table in R. Find out which arguments you need to specify so that you pass your vectors `column_names` and `column_types` to `read.table()`. Read in the data as `abalone`, and then check its structure with `str()`.
+
+```{r}
+?read.table
+abalone <- read.table("abalone.data", sep = ",", col.names = column_names, colClasses = column_types)
+str(abalone)
+```
+
+- Now re-read `abalone.data` with the `read.csv()` function. Name this data as `abalone2`, and check its structure with `str()`.
+
+```{r}
+abalone2 <- read.csv("abalone.data", header = F, col.names = column_names, colClasses = column_types)
+str(abalone2)
+```
+
+- How would you read just the first 10 lines in `abalone.data`? Name this data as `abalone0`, and check its structure with `str()`.
+
+```{r}
+abalone0 <- read.csv("abalone.data", header = F, nrows = 10, col.names = column_names, colClasses = column_types)
+str(abalone0)
+```
+
+- How would you skip the first 10 lines in `abalone.data`, in order to read the next 10 lines (lines 11-20)? Name this data as `abalone20`, and check its structure with `str()`.
+
+```{r}
+abalone20 <- read.csv("abalone.data", header = F, nrows = 10, skip = 10, col.names = column_names, colClasses = column_types)
+str(abalone20)
+```
+
+- Read the documentation of `read.table()` about the argument `colClasses`. What happens when you specify the data-type of one or more columns as `"NULL"`?
+
+"NULL" is possible values, which means the column(s) is(are) skipped.
+
+- Use the following functions to start examining descriptive aspects about the `abalone` data frame:
+
+    + `str()`
+    + `summary()`
+    + `head()` and `tail()`
+    + `dim()`
+    + `names()`
+    + `colnames()`
+    + `nrow()`
+    + `ncol()`
+
+```{r}
+str(abalone)
+summary(abalone)
+head(abalone)
+tail(abalone)
+dim(abalone)
+names(abalone)
+colnames(abalone)
+nrow(abalone)
+ncol(abalone)
+```
+
+- Use R functions to compute descriptive statistics, and confirm the following statistics. Your output does not have to be in the same format of the table below. The important thing is that you begin learning how to manipulate columns (or vectors) of a data.frame.
+
+```
+       Length Diam  Height  Whole  Shucked  Viscera    Shell    Rings
+Min	   0.075  0.055	0.000   0.002	 0.001    0.001	   0.002	    1
+Max	   0.815  0.650	1.130   2.826	 1.488    0.760	   1.005	   29
+Mean   0.524  0.408	0.140   0.829	 0.359    0.181	   0.239	9.934
+SD	   0.120  0.099	0.042   0.490	 0.222    0.110	   0.139	3.224
+```
+
+```{r}
+descriptive_Min <- c(min(abalone$Length), min(abalone$Diameter), min(abalone$Height), min(abalone$Whole), min(abalone$Shucked), min(abalone$Viscera), min(abalone$Shell), min(abalone$Rings))
+descriptive_Max <- c(max(abalone$Length), max(abalone$Diameter), max(abalone$Height), max(abalone$Whole), max(abalone$Shucked), max(abalone$Viscera), max(abalone$Shell), max(abalone$Rings))
+descriptive_Mean <- c(mean(abalone$Length), mean(abalone$Diameter), mean(abalone$Height), mean(abalone$Whole), mean(abalone$Shucked), mean(abalone$Viscera), mean(abalone$Shell), mean(abalone$Rings))
+descriptive_SD <- c(sd(abalone$Length), sd(abalone$Diameter), sd(abalone$Height), sd(abalone$Whole), sd(abalone$Shucked), sd(abalone$Viscera), sd(abalone$Shell), sd(abalone$Rings))
+
+descriptive <- rbind(descriptive_Min, descriptive_Max, descriptive_Mean, descriptive_SD)
+colnames(descriptive) <- c("Length", "Diameter", "Height", "Whole", "Shucked", "Viscera", "Shell", "Rings")
+rownames(descriptive) <- c("Min", "Max", "Mean", "SD")
+descriptive
+```
+
+-----
+
+## Filtering, Slicing, and Selecting
+
+### Practice
+
+- slice the data by selecting the first 5 rows
+
+```{r}
+five_rows <- abalone[1:5,]
+five_rows
+```
+
+- slice the data by selecting rows 5, 10, 15, 20, 25, ..., 50.
+
+```{r}
+select_rows_five_to_fifty <- abalone[seq(5,50,by = 5),]
+select_rows_five_to_fifty
+```
+
+- slice the data by selecting the last 5 rows; try doing this without using `tail()`, and without hard coding the numbers of the alst five rows.
+
+```{r}
+last_five_rows <- abalone[(nrow(abalone)-4):nrow(abalone),]
+last_five_rows
+```
+
+- create a data frame `height14` by filtering the data with those abalones with Height less than 0.14, and display its dimensions with `dim()`
+
+```{r}
+height14 <- abalone[abalone$Height < 0.14,]
+dim(height14)
+```
+
+- create a data frame `infant` by filtering the data about Infant abalones, and display its dimensions with `dim()`
+
+```{r}
+infant <- abalone[abalone$Sex == "I",]
+dim(infant)
+```
+
+- create a data frame `male_female` by filtering the data with Male and Female abalones, and display its dimensions with `dim()`
+
+```{r}
+male_female <- abalone[abalone$Sex == "M" | abalone$Sex == "F",]
+dim(male_female)
+```
+
+- filter the data with those abalones with more than 25 Rings, displaying only their Sex, and Rings.
+
+```{r}
+more_than_25_rings <- abalone[abalone$Rings > 25,]
+more_than_25_rings_display <- more_than_25_rings[ , c("Sex", "Rings")]
+more_than_25_rings_display
+```
+
+- filter the data with those infant abalones with more than 3 Rings and less than 6, displaying only their Sex, Rings, and Diameter.
+
+```{r}
+infant_more_than_3_Rings_less_than_6 <- abalone[abalone$Sex == "I" & 3 < abalone$Rings & abalone$Rings < 6,]
+infant_more_than_3_Rings_less_than_6_display <- infant_more_than_3_Rings_less_than_6[ , c("Sex", "Rings", "Diameter")]
+infant_more_than_3_Rings_less_than_6_display
+```
+
+-----
+
+## Adding new variables and Sorting rows
+
+Create a small data frame `abies` by filtering only infant abalones, and gathering columns Length, Height, and Diameter:
+
+```{r}
+abies <- abalone[abalone$Sex == 'I', c('Length', 'Height', 'Diameter')]
+```
+
+### Practice
+
+- using the data frame `abies`, add a new variable `product` with the product of `Whole` and `Shucked`.
+
+```{r}
+abies_total <- abalone[abalone$Sex == "I",]
+product <- abies_total$Whole * abies_total$Shucked
+```
+
+- create a new data frame `abies3`, by adding columns `log_height` and `log_length`
+with the log transformations of `height` and `length`.
+
+```{r}
+abies3 <- data.frame(log_height = log(abies$Height), log_length = log(abies$Length))
+str(abies3)
+```
+
+- use the original data frame `abalone` to _filter_ and _arrange_ those abalones with height less than 0.12, in increasing order.
+
+```{r}
+abalone_height_filter_and_arrange <- abalone[abalone$Height < 0.12, ]
+abalone_height_filter_and_arrange <- abalone_height_filter_and_arrange[order(abalone_height_filter_and_arrange$Height, decreasing = T), ]
+abalone_height_filter_and_arrange
+```
+
+- display a data frame with the Sex, Diameter, and Rings, of the top-5 highest abalones
+
+```{r}
+top5_highest_abalones <- abalone[order(abalone$Height, decreasing = T)[1:5], ]
+top5_highest_abalones_display <- top5_highest_abalones[ , c("Sex", "Diameter", "Rings")]
+top5_highest_abalones_display
+```
+
+- display a data frame with the Sex, Diameter, and Rings, of the top-5 longest abalones
+
+```{r}
+top5_longest_abalones <- abalone[order(abalone$Length, decreasing = T)[1:5], ]
+top5_longest_abalones_display <- top5_longest_abalones[ , c("Sex", "Diameter", "Rings")]
+top5_longest_abalones_display
+```
+
+-----
+
+## Basic Plots
+
+### Practice
+
+The workhorse plotting function in base R is `plot()`. This function is actually a _method_, meaning that it behaves differently depending on the type of input.
+
+Find out what kind of graphic is returned by `plot()` when you pass it the following inputs:
+
+- a numeric variable: e.g. `abalone$Height`
+
+```{r}
+plot(abalone$Height)
+```
+
+It's a scatter diagram.
+
+- a factor: e.g. `Sex`
+
+```{r}
+plot(abalone$Sex)
+```
+
+It's a bar diagram.
+
+- two numeric variables: e.g. `abalone$Height` and `abalone$Length`
+
+```{r}
+plot(abalone$Height, abalone$Length)
+```
+
+It's a scatter diagram showing the relationship between Height and  Length.
+
+- a data frame with two numeric columns: e.g. `Height`, and `Length`
+
+```{r}
+dataframe1 <- data.frame(Height = abalone$Height, Length = abalone$Length)
+plot(dataframe1)
+```
+
+The graph is the same as the previous.
+
+- a data frame with more than two numeric columns: `Height`, `Length`, and `Diameter`
+
+```{r}
+dataframe2 <- data.frame(Height = abalone$Height, Length = abalone$Length, Diameter = abalone$Diameter)
+plot(dataframe2)
+```
+
+It's a pairwise scatter diagram.
+
+- a 2-column data frame with one factor in the first column, and one numeric vector in the second column: e.g. `Sex` and `Length`
+
+```{r}
+dataframe3 <- data.frame(Sex = abalone$Sex, Length = abalone$Length)
+plot(dataframe3)
+```
+
+It's a boxplot.
+
+- a 2-column data frame with one numeric vector in the first column, and one factor in the second column: e.g. `Length` and `Sex` 
+
+```{r}
+dataframe4 <- data.frame(Length = abalone$Length, Sex = abalone$Sex)
+plot(dataframe4)
+```
+
+It's a horizontal scatter diagram.
+
+### Practice: Scatter Diagrams
+
+- point character: `pch`   (see `?points`)
+- point color(s): `col`    (see `?points)
+- point size: `cex`   (see `?cex`)
+- x-axis label: `xlab`   (see `?plot`)
+- y-axis label: `ylab`   (see `?plot`)
+- title: `main`    (see `?plot`)
+- subtitle: `sub`  (see `?plot`)
+- logarithmic transformation of x and/or y: `log`  (see `?plot.default`)
+- feel free to play with other graphical parameters
+
+```{r}
+?points
+plot(x = abalone$Length, y = abalone$Height, cex = 0.1, xlab = "Length", ylab = "Height", main = "Length and Height", sub = "Data: Abalone", col = "green")
+points(x = abalone$Length, y = abalone$Height, col = "green")
+```
+
